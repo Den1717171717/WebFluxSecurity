@@ -1,0 +1,81 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version "$springBootVersion"
+	id 'io.spring.dependency-management' version "$springDependencyManagementVersion"
+    id 'com.diffplug.spotless' version "$spotlessVersion"
+}
+
+group = 'net.proselyte'
+version = '0.0.1-SNAPSHOT'
+
+spotless {
+    java {
+        googleJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.session:spring-session-core'
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+
+    implementation "io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE"
+    implementation "org.postgresql:postgresql:42.6.0"
+    implementation "org.flywaydb:flyway-core:9.22.0"
+
+    implementation "com.google.code.findbugs:jsr305:3.0.2"
+
+    implementation "io.jsonwebtoken:jjwt-api:0.11.5"
+    implementation "javax.xml.bind:jaxb-api:2.3.1"
+
+    implementation "org.mapstruct:mapstruct:1.6.2"
+
+    // Lombok
+    compileOnly "org.projectlombok:lombok:1.18.28"
+    annotationProcessor "org.projectlombok:lombok:1.18.28"
+
+    // MapStruct
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.6.2"
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+tasks.register('format') {
+    group = 'development'
+    description = 'Formats Java code'
+    dependsOn 'spotlessApply'
+}
+
+tasks.register('fullBuild') {
+    group = 'development'
+    description = 'Clean, format and build project'
+
+    dependsOn 'clean', 'spotlessApply', 'build'
+}
+
+tasks.named('spotlessApply') {
+    mustRunAfter 'clean'
+}
+
+tasks.named('build') {
+    mustRunAfter 'spotlessApply'
+}
+
